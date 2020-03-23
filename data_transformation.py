@@ -1,145 +1,74 @@
 import random
 import json
-import sys
-import matplotlib.pyplot as plt
-import math, os
+import math, os, argparse
+from collections import OrderedDict
 
-FIXED_CATEGORY_DIVISION = "categories_split.json"
-
-NO_REL = "no_relation"
-seed_for_random = int(sys.argv[1]) if len(sys.argv) > 1 else 5161
-create_data_or_gather_stats = sys.argv[2] if len(sys.argv) > 2 else "create"
-random_split_or_from_json_file = sys.argv[3] if len(sys.argv) > 3 else "false"
-
-prefix = "raw/"
-train_file = prefix + "TACRED_train.json"
-dev_file = prefix + "TACRED_dev.json"
-test_file = prefix + "TACRED_test.json"
-
-
-def filter_out_no_relation_to_keep_dist(original_data, filtered_data):
-    no_relation_pro = get_no_relation_propo(original_data)
-    sizes, _ = extract_data(filtered_data, with_no_relation=False)
-    save_this_amount = sum(sizes) / (no_relation_pro ** -1 - 1)
-    save_this_amount = round(save_this_amount)
-    filtered_data[NO_REL] = random.sample(filtered_data[NO_REL], save_this_amount)
-
-
-def print_data(train_raw, dev_raw, test_raw, location=None):
-    counts = "counts.png"
-    proba_name = "probabilities.png"
-    if location:
-        counts = location + counts
-        proba_name = location + proba_name
-    if len(train_raw) == 0:
-        train_raw = json.load(open(train_file))
-        dev_raw = json.load(open(dev_file))
-        test_raw = json.load(open(test_file))
-        counts = prefix + counts
-        proba_name = prefix + proba_name
-    train_size, train_names = extract_data(train_raw, with_no_relation=True)
-    dev_size, dev_names = extract_data(dev_raw, with_no_relation=True)
-    test_size, test_names = extract_data(test_raw, with_no_relation=True)
-
-    LABELS = list(train_names) + list(dev_names) + list(test_names)
-
-    ax = plt.subplot(111)
-    plot_figure(LABELS, ax, dev_size, test_size, train_names, train_size, counts)
-    # ax = plt.figure(111)
-    fig2, ax1 = plt.subplots(nrows=1, ncols=1)
-    train_size = normalize(train_size)
-    dev_size = normalize(dev_size)
-    test_size = normalize(test_size)
-    plot_figure(LABELS, ax1, dev_size, test_size, train_names, train_size, proba_name)
-    plt.tight_layout()
-
-
-def plot_figure(LABELS, ax, dev_size, test_size, train_names, train_size, name):
-    ax.bar([i for i in range(len(train_size))], train_size, tick_label=train_names, color='g', align='center')
-    ax.bar([i + len(train_size) for i in range(len(dev_size))], dev_size, color='y', align='center')
-    ax.bar([i + len(train_size) + len(dev_size) for i in range(len(test_size))], test_size, color='r', align='center')
-    # ax.bar(dev, color='g', align='center')
-    # ax.bar(test,color='r', align='center')
-    # ax.xaxis_date()
-    plt.xticks([i for i in range(len(LABELS))], LABELS, rotation=90)
-    ax.tick_params(axis='both', which='major', labelsize=5)
-    ax.tick_params(axis='both', which='minor', labelsize=4)
-    plt.tight_layout()
-    plt.savefig(name, dpi=200)
-
-
-def normalize(data_size):
-    return [i / sum(data_size) for i in data_size]
-
-
-def get_no_relation_propo(data_raw):
-    sizes, _ = extract_data(data_raw, with_no_relation=True)
-    no_rel_pro = sizes[0] / sum(sizes)
-    return no_rel_pro
-
-
-def extract_data(raw, with_no_relation=False):
-    if with_no_relation:
-        all_needed = [(k, v) for k, v in sorted(raw.items(), reverse=True, key=lambda item: len(item[1])) if k != ""]
-    else:
-        all_needed = [(k, v) for k, v in sorted(raw.items(), reverse=True, key=lambda item: len(item[1])) if
-                      k != NO_REL]
-    return list(map(lambda x: len(x[1]), all_needed)), list(map(lambda x: x[0], all_needed))
-    # return list(map(lambda x: len(x), all_needed.values()))[:-1], list(all_needed.keys())[:-1]
-    # return list(map(lambda x: len(x), raw.values())), list(raw.keys())
-
-
-if create_data_or_gather_stats != "create":
-    print_data([], [], [])
-    exit()
+TACRED_NO_REL = "no_relation"
 
 
 def possible_class_names(rel_name, names, with_no_relation=False):
     if with_no_relation:
-        return rel_name in names or rel_name == NO_REL
+        return rel_name in names or rel_name == category_to_keep
     else:
         return rel_name in names
 
 
 def read_data(f):
     # for f in [train_file, dev_file, test_file]:
-    fp = open(f, "r")
-    data = fp.readlines()
-    data = json.loads(data[0])
+    with open(f, "r") as fp:
+        data = json.load(fp, object_pairs_hook=OrderedDict)
     return data
 
 
 def setup_flipped_data(original_data, these_relations):
-    data = {NO_REL: []}
+    data = {category_to_keep: []}
     for k, v in original_data.items():
-        if possible_class_names(k, these_relations) and k != NO_REL:
+        if possible_class_names(k, these_relations) and k != category_to_keep:
             data[k] = v
         else:
-            data[NO_REL].extend(v)
+            data[category_to_keep].extend(v)
     return data
 
 
-def main():
+def main(args):
     '''
     Given the three original supervised data sections
     We re-label all instances in the three sections such that each category
     label appears only in a single data section.
-    We choose this sizes:
+    For TACRED - we choose these category sizes:
     Number of train categories is 25
     Number of dev categories is 6
     Number of test categories is 10
 
-    You can either use the fixed split we created for TACRED or use your own
+    You can either use the fixed split we published for TACRED or create your own
     random split.
     '''
-    random.seed(seed_for_random)
-    train_categories_size = 25
-    dev_categories_size = 6
-    test_categories_size = 10
+
+    train_categories_size = args.train_size
+    dev_categories_size = args.dev_size
+    test_categories_size = args.test_size
+
+    train_file = args.train_data
+    dev_file = args.dev_data
+    test_file = args.test_data
+
+    seed = args.seed
+    # predefined categories split
+    predefined_split = args.fixed_categories_split
+    if (seed is not None) and (predefined_split is not None):
+        assert False, "We split the categories either by a fixed json file or randomly. Please don't specify both a seed and a fixed json format"
+
+    if predefined_split is not None:
+        predefined_split = json.load(open(predefined_split))
+
+    output_dir = args.output_dir
 
     original_train_data = read_data(train_file)
     original_dev_data = read_data(dev_file)
     original_test_data = read_data(test_file)
+
+    global category_to_keep
+    category_to_keep = args.category_to_keep
 
     '''
     This script assumes the data is in the form of a dictionary where 
@@ -147,45 +76,73 @@ def main():
     Data form: {"class_name: [x_0,x_1,...,x_N]"}
     '''
 
-    relations = original_train_data.keys()
-    relations = set(relations).difference(set([NO_REL]))
-    possible_test_relation = relations
-    number_of_tests = math.ceil(len(relations) / test_categories_size)
+    categories = [k for k in original_train_data.keys() if k != category_to_keep]
+    number_of_tests = math.ceil(len(categories) / test_categories_size)
 
-    # predefined categories split
-    predefined_split = json.load(open(FIXED_CATEGORY_DIVISION))
-
-    for _test_split_index in range(1, number_of_tests):
-        print(_test_split_index)
-        if random_split_or_from_json_file != "false":
-            # random spilt of relation
-            if _test_split_index == number_of_tests - 1:
-                test_relations = list(possible_test_relation)
-            else:
-                test_relations = random.sample(possible_test_relation, test_categories_size)
-
-            all_other_relation = relations - set(test_relations)
-            possible_test_relation = possible_test_relation.difference(set(test_relations))
-            dev_relations = random.sample(all_other_relation, dev_categories_size)
-            train_relations = [k for k in all_other_relation if k not in dev_relations]
-
+    if predefined_split is None:
+        # random spilt of relation
+        if seed is not None:
+            print("Random splits, with a fixed seed value:", seed)
+            random.seed(seed)
         else:
-            # get predefined classes
-            spilt_number = "split" + str(_test_split_index)
-            split = predefined_split[spilt_number]
-            train_relations, dev_relations, test_relations = split["train"], split["dev"], split["test"]
+            print("Random splits, with a random seed.")
+        splits = build_splits_randomly(categories, train_categories_size,
+                                       dev_categories_size,
+                                       test_categories_size)
 
-        final_train_data, final_dev_data, final_test_data = relabel_data_sections(original_train_data,
+    else:
+        # get predefined classes
+        print("Fixed splits, according to this json: ", args.fixed_categories_split)
+        splits = build_splits_from_json(number_of_tests, predefined_split)
+
+    # each split is formed: train, dev, test
+    for _test_split_index, [train_relations, dev_relations, test_relations] in enumerate(splits, 1):
+        split_train_data, split_dev_data, split_test_data = relabel_data_sections(original_train_data,
                                                                                   original_dev_data, original_test_data,
                                                                                   train_relations, dev_relations,
                                                                                   test_relations)
 
-        current_dir = str(_test_split_index) + "_TACRED_split/"
-        create_dir_if_needed(current_dir)
-        print_data(final_train_data,final_dev_data,final_test_data,current_dir)
-        json.dump(final_train_data, open(current_dir + "train_data.json", "w"))
-        json.dump(final_dev_data, open(current_dir + "dev_data.json", "w"))
-        json.dump(final_test_data, open(current_dir + "test_data.json", "w"))
+        create_dir_if_needed(output_dir)
+
+        # print_data(split_train_data, split_dev_data, split_test_data, current_dir)
+        json.dump(split_train_data, open(os.path.join(output_dir, str(_test_split_index) + "_train_data.json"), "w"))
+        json.dump(split_dev_data, open(os.path.join(output_dir, str(_test_split_index) + "_dev_data.json"), "w"))
+        json.dump(split_test_data, open(os.path.join(output_dir, str(_test_split_index) + "_test_data.json"), "w"))
+
+
+def build_splits_from_json(number_of_tests, predefined_split):
+    splits = []
+    assert number_of_tests - 1 == len(predefined_split), "number of json splits is different than number" \
+                                                         "of necessary splits according to specified sizes"
+    for _test_split_index in range(1, number_of_tests):
+        spilt_number = "split" + str(_test_split_index)
+        split = predefined_split[spilt_number]
+        train_relations, dev_relations, test_relations = split["train"], split["dev"], split["test"]
+        splits.append([train_relations, dev_relations, test_relations])
+    return splits
+
+
+def build_splits_randomly(categories, train_size, dev_size, test_size):
+    splits = []
+    possible_test_relation = categories[::]
+    number_of_tests = len(categories) // test_size
+    for _test_split_index in range(number_of_tests):
+        if _test_split_index == number_of_tests - 1:
+            test_relations = list(possible_test_relation)
+        else:
+            test_relations = random.sample(possible_test_relation, test_size)
+        all_other_relations = [c for c in categories if c not in test_relations]
+        possible_test_relation = [c for c in possible_test_relation if c not in test_relations]
+
+        dev_relations = random.sample(all_other_relations, dev_size)
+        train_relations = [k for k in all_other_relations if k not in dev_relations]
+        if _test_split_index == 0:
+            assert len(train_relations) == train_size, "Amount of train categories isn't what you specified. " \
+                                                       "(Train_size + Dev_size + Test_size) should be equal to the size " \
+                                                       "of the predefined categories"
+        this_split = [train_relations, dev_relations, test_relations]
+        splits.append(this_split)
+    return splits
 
 
 def relabel_data_sections(original_train_data, original_dev_data, original_test_data, train_relations, dev_relations,
@@ -205,4 +162,27 @@ def create_dir_if_needed(dir_name):
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--train_data", type=str, required=True)
+    parser.add_argument("--train_size", default=25, type=int, required=False,
+                        help="The number of train data categories")
+    parser.add_argument("--dev_data", type=str, required=True)
+    parser.add_argument("--dev_size", default=6, type=int, required=False,
+                        help="The number of dev data categories")
+    parser.add_argument("--test_data", type=str, required=True)
+    parser.add_argument("--test_size", default=10, type=int, required=False,
+                        help="The number of test data categories")
+    parser.add_argument("--fixed_categories_split", default=None, type=str, required=False,
+                        help="split the categories based on a published json file that specify "
+                             + "per each split the categories")
+
+    parser.add_argument("--category_to_keep", default=TACRED_NO_REL, type=str, required=False,
+                        help="If one of the category may be kept in all data section please specify the category name")
+
+    parser.add_argument("--seed", default=None, type=int, required=False)
+
+    parser.add_argument("--output_dir", type=str, required=False,
+                        help="The output directory where the Few-shot data is stored.")
+
+    args = parser.parse_args()
+    main(args)

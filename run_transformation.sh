@@ -1,0 +1,1 @@
+python data_transformation.py --train_data raw/TACRED_train.json --train_size 25 --dev_data raw/TACRED_dev.json --dev_size 6 --test_data raw/TACRED_test.json --test_size 10 --fixed_categories_split categories_split.json --output_dir output
