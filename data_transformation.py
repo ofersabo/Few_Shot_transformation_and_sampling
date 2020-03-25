@@ -56,7 +56,8 @@ def main(args):
     # predefined categories split
     predefined_split = args.fixed_categories_split
     if (seed is not None) and (predefined_split is not None):
-        assert False, "We split the categories either by a fixed json file or randomly. Please don't specify both a seed and a fixed json format"
+        assert False, "We split the categories either by a fixed json file or randomly." \
+                      " Please don't specify both a seed and a fixed json format"
 
     if predefined_split is not None:
         predefined_split = json.load(open(predefined_split))
@@ -138,7 +139,8 @@ def build_splits_randomly(categories, train_size, dev_size, test_size):
         train_relations = [k for k in all_other_relations if k not in dev_relations]
         if _test_split_index == 0:
             assert len(train_relations) == train_size, "Amount of train categories isn't what you specified. " \
-                                                       "(Train_size + Dev_size + Test_size) should be equal to the size " \
+                                                       "(Train_size + Dev_size + Test_size) should be equal to the" \
+                                                       " size " \
                                                        "of the predefined categories"
         this_split = [train_relations, dev_relations, test_relations]
         splits.append(this_split)
@@ -184,5 +186,5 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str, required=False,
                         help="The output directory where the Few-shot data is stored.")
 
-    args = parser.parse_args()
-    main(args)
+    _args = parser.parse_args()
+    main(_args)
