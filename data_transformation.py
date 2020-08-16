@@ -74,6 +74,7 @@ def main(args):
     '''
     This script assumes the data is in the form of a dictionary where 
     the key is the class name and the value is a list of all class instances.
+    As in underneath structure:
     Data form: {"class_name: [x_0,x_1,...,x_N]"}
     '''
 
