@@ -3,12 +3,9 @@ import random
 import os, sys, inspect, argparse
 from numpy.random import choice
 import numpy as np
+from collections import OrderedDict
 
 
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-grantparentdir = os.path.dirname(parentdir)
-sys.path.insert(0, grantparentdir)
 
 
 # data = {"train":"train_" + str(size[0]) + ".json","val":"val_" +str(size[1])}
@@ -89,9 +86,8 @@ def main():
     np.random.seed(args.seed)
 
     whole_division = json.load(open(args.file_name))
-    sample_uniform = args.sample_uniform != "no"
+    sample_uniform = args.sample_uniform
     assert "no_relation" in whole_division
-    args.set_a_positive_instance_per_episode = args.set_a_positive_instance_per_episode.lower() == "true"
 
     if args.set_a_positive_instance_per_episode:
         print("WARNING!!, CHANGING POSITIVE LABEL DISTRIBUTION")
@@ -101,10 +97,7 @@ def main():
     weights_all_relation = get_weights(whole_division)
     query_weights = get_query_weights(whole_division,weights_all_relation)
     uniform_dist_drop_no_relation = [1 / (len(query_weights) - 1) if i > 0.0 else 0.0 for i in query_weights ]
-    if args.train_or_pred == "pred":
-        tacred_for_pred(whole_division,weights_all_relation, query_weights, uniform_dist_drop_no_relation,sample_uniform)
-    else:
-        tacred_for_train(whole_division,weights_all_relation, query_weights, uniform_dist_drop_no_relation,sample_uniform)
+    create_episodes(whole_division, weights_all_relation, query_weights, uniform_dist_drop_no_relation, sample_uniform)
 
 
 def tacred_for_pred(whole_division,weights_all_relation, query_weights, uniform_dist_drop_no_relation,do_sample_uniform):
@@ -122,7 +115,7 @@ def tacred_for_pred(whole_division,weights_all_relation, query_weights, uniform_
             outfile.write('\n')
 
 
-def tacred_for_train(whole_division, weights_all_relation, query_weights, uniform_dist_drop_no_relation,do_sample_uniform):
+def create_episodes(whole_division, weights_all_relation, query_weights, uniform_dist_drop_no_relation, do_sample_uniform):
     episodes = []
     targets_lists = []
     aux_data = []
@@ -151,12 +144,9 @@ if __name__ == "__main__":
     parser.add_argument("--output_file_name", type=str, required=True,
                         help="The file name to be generated")
 
-    parser.add_argument("--train_or_pred", default="train", type=str, required=False,
-                        help="For development name")
+    parser.add_argument("--set_a_positive_instance_per_episode", action="store_true")
 
-    parser.add_argument("--set_a_positive_instance_per_episode", default="no", type=str, required=False)
-
-    parser.add_argument("--sample_uniform", default="true", type=str, required=False)
+    parser.add_argument("--sample_uniform", action="store_false")
 
     global args
     args = parser.parse_args()
