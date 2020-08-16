@@ -88,64 +88,51 @@ def main(args):
             random.seed(seed)
         else:
             print("Random splits, with a random seed.")
-        splits = build_splits_randomly(categories, train_categories_size,
+        split = build_splits_randomly(categories, train_categories_size,
                                        dev_categories_size,
                                        test_categories_size)
 
     else:
         # get predefined classes
         print("Fixed splits, according to this json: ", args.fixed_categories_split)
-        splits = build_splits_from_json(number_of_tests, predefined_split)
+        split = build_splits_from_json(predefined_split)
 
     # each split is formed: train, dev, test
-    for _test_split_index, [train_relations, dev_relations, test_relations] in enumerate(splits, 1):
-        split_train_data, split_dev_data, split_test_data = relabel_data_sections(original_train_data,
+    [train_relations, dev_relations, test_relations] = split
+    split_train_data, split_dev_data, split_test_data = relabel_data_sections(original_train_data,
                                                                                   original_dev_data, original_test_data,
                                                                                   train_relations, dev_relations,
                                                                                   test_relations)
 
-        create_dir_if_needed(output_dir)
+    create_dir_if_needed(output_dir)
 
-        # print_data(split_train_data, split_dev_data, split_test_data, current_dir)
-        json.dump(split_train_data, open(os.path.join(output_dir, str(_test_split_index) + "_train_data.json"), "w"))
-        json.dump(split_dev_data, open(os.path.join(output_dir, str(_test_split_index) + "_dev_data.json"), "w"))
-        json.dump(split_test_data, open(os.path.join(output_dir, str(_test_split_index) + "_test_data.json"), "w"))
+    # print_data(split_train_data, split_dev_data, split_test_data, current_dir)
+    json.dump(split_train_data, open(os.path.join(output_dir, "_train_data.json"), "w"))
+    json.dump(split_dev_data, open(os.path.join(output_dir, "_dev_data.json"), "w"))
+    json.dump(split_test_data, open(os.path.join(output_dir, "_test_data.json"), "w"))
 
 
-def build_splits_from_json(number_of_tests, predefined_split):
-    splits = []
-    assert number_of_tests - 1 == len(predefined_split), "number of json splits is different than number" \
-                                                         "of necessary splits according to specified sizes"
-    for _test_split_index in range(1, number_of_tests):
-        spilt_number = "split" + str(_test_split_index)
-        split = predefined_split[spilt_number]
-        train_relations, dev_relations, test_relations = split["train"], split["dev"], split["test"]
-        splits.append([train_relations, dev_relations, test_relations])
-    return splits
+def build_splits_from_json(predefined_split):
+    split = predefined_split
+    train_relations, dev_relations, test_relations = split["train"], split["dev"], split["test"]
+    this_split = [train_relations, dev_relations, test_relations]
+    return this_split
 
 
 def build_splits_randomly(categories, train_size, dev_size, test_size):
-    splits = []
-    possible_test_relation = categories[::]
-    number_of_tests = len(categories) // test_size
-    for _test_split_index in range(number_of_tests):
-        if _test_split_index == number_of_tests - 1:
-            test_relations = list(possible_test_relation)
-        else:
-            test_relations = random.sample(possible_test_relation, test_size)
-        all_other_relations = [c for c in categories if c not in test_relations]
-        possible_test_relation = [c for c in possible_test_relation if c not in test_relations]
+    possible_test_relation = categories
+    test_relations = random.sample(possible_test_relation, test_size)
+    all_other_relations = [c for c in categories if c not in test_relations]
 
-        dev_relations = random.sample(all_other_relations, dev_size)
-        train_relations = [k for k in all_other_relations if k not in dev_relations]
-        if _test_split_index == 0:
-            assert len(train_relations) == train_size, "Amount of train categories isn't what you specified. " \
+    dev_relations = random.sample(all_other_relations, dev_size)
+    train_relations = [k for k in all_other_relations if k not in dev_relations]
+
+    assert len(train_relations) == train_size, "Amount of train categories isn't what you specified. " \
                                                        "(Train_size + Dev_size + Test_size) should be equal to the" \
                                                        " size " \
                                                        "of the predefined categories"
-        this_split = [train_relations, dev_relations, test_relations]
-        splits.append(this_split)
-    return splits
+    this_split = [train_relations, dev_relations, test_relations]
+    return this_split
 
 
 def relabel_data_sections(original_train_data, original_dev_data, original_test_data, train_relations, dev_relations,
