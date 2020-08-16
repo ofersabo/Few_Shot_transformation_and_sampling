@@ -37,8 +37,8 @@ def read_json(filename,output_file):
         instance_dict = {"tokens": tokens, "h": [head, None, [[i for i in range(head_start, head_end + 1)]]]
             , "t": [tail, None, [[i for i in range(tail_start, tail_end + 1)]]]}
         insert_to_dict_data(this_dataset_by_relation, relation, instance_dict)
-        with open(output_file, "w") as f:
-            json.dump(this_dataset_by_relation, f)
+    with open(output_file, "w") as f:
+        json.dump(this_dataset_by_relation, f)
 
 
 def insert_to_dict_data(dict_vat, relation, this_small_instance):
