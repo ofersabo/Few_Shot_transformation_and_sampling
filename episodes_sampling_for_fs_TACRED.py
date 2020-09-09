@@ -6,12 +6,6 @@ import numpy as np
 from collections import OrderedDict
 
 
-
-
-# data = {"train":"train_" + str(size[0]) + ".json","val":"val_" +str(size[1])}
-
-
-
 def remove_relations_with_too_few_instances(data,K):
     relations_to_remove = []
     for r in data:
@@ -98,21 +92,6 @@ def main():
     query_weights = get_query_weights(whole_division,weights_all_relation)
     uniform_dist_drop_no_relation = [1 / (len(query_weights) - 1) if i > 0.0 else 0.0 for i in query_weights ]
     create_episodes(whole_division, weights_all_relation, query_weights, uniform_dist_drop_no_relation, sample_uniform)
-
-
-def tacred_for_pred(whole_division,weights_all_relation, query_weights, uniform_dist_drop_no_relation,do_sample_uniform):
-    with open(args.output_file_name, 'w') as outfile:
-        for i in range(args.episodes_size):
-            aux_data = []
-            episode, target_list, list_target_relation = TACRED_create_episode(whole_division, weights_all_relation, query_weights,
-                                                    uniform_dist_drop_no_relation, args.N, args.K,
-                                                    args.number_of_queries, do_sample_uniform)
-
-            target_relation = list_target_relation[0]
-            all_relation = list_target_relation[1]
-            aux_data.append((target_relation, all_relation))
-            json.dump({"input_data": episode, "aux_data": aux_data}, outfile)
-            outfile.write('\n')
 
 
 def create_episodes(whole_division, weights_all_relation, query_weights, uniform_dist_drop_no_relation, do_sample_uniform):
