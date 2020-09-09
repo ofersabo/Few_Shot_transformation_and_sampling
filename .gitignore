@@ -1,2 +1,7 @@
 .git/*
 .idea/*
+skim_json.py
+verify_episodes.py
+get_the_same_downsampling.py
+create_test_episodes.sh
+
