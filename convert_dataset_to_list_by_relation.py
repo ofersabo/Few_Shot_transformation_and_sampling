@@ -24,7 +24,7 @@ def replace_to_rounded_parnthesis(list_of_tokens):
             list_of_tokens[i] = ')'
     return list_of_tokens
 
-def read_json(data_location,output_file):
+def read_and_dump_new_json(data_location, output_file):
     this_dataset_by_relation = {}
     with open(data_location, "r") as fp:
         data = json.load(fp)
@@ -40,7 +40,7 @@ def insert_to_dict_data(dict_vat, relation, this_small_instance):
     dict_vat[relation].append(this_small_instance)
 
 def main(args):
-    all_data = read_json(args.dataset,args.output_file)
+    read_and_dump_new_json(args.dataset, args.output_file)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
