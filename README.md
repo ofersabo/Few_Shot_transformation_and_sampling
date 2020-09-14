@@ -25,6 +25,10 @@ python episodes_sampling_for_fs_TACRED.py --file_name [test_data] --episodes_siz
 Remember to create four files of episodes with seed ranging from 160290 to 160294
 Use the same script to generate train and dev episodes. 
 
+### Generating the test episodes for Few-Shot TACRED
+use our shell script to generate the same 5 files of test episodes for each setting (5-shot and 1-shot). 
+
+./create_test_episodes.sh
 
 ### In our research we found that it is advantageous to downsample the train set. 
 Here is the command that generates the same dataset as we used. If you choose to downsample the training data, then apply
