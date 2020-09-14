@@ -1,4 +1,4 @@
-import json,sys
+import json,sys,pickle
 import argparse
 
 def do_downsampling_and_output_file(numbers,data_original,output):
@@ -14,10 +14,7 @@ def main(args):
     original_data = args.dataset
     original_data = open(original_data)
     data_original = json.load(original_data)
-    with open("numbers_for_downsampling.txt","r") as f:
-        x = json.load(f)
-
-    numbers = x["the_required_numbers"]
+    numbers = pickle.load(open("numbers_for_downsampling.pickle", "rb"))
 
     do_downsampling_and_output_file(numbers,data_original,args.output_file)
 
