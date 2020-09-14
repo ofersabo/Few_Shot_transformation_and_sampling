@@ -26,7 +26,7 @@ Remember to create four files of episodes with seed ranging from 160290 to 16029
 Use the same script to generate train and dev episodes. 
 
 ### Generating the test episodes for Few-Shot TACRED
-use our shell script to generate the same 5 files of test episodes for each setting (5-shot and 1-shot). 
+use our shell script to generate the same five files of test episodes for each setting (1-shot and 5-shot). 
 
 ./create_test_episodes.sh
 
