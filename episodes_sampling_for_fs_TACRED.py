@@ -25,23 +25,15 @@ def normalized_weights(other_list):
 
 
 def TACRED_create_episode(all_data, weights_all_relation, query_weights, uniform_dist_drop_no_relation, N, K,
-                          number_of_queries, sample_uni):
-    if sample_uni:
-        # uniform sampling but remove no_relation
-        sampled_relation = choice(a=[*all_data], size=N, replace=False, p=uniform_dist_drop_no_relation).tolist()
-    else:
-        sampled_relation = choice(a=[*all_data], size=N, replace=False, p=query_weights).tolist()
+                          number_of_queries):
+    # uniform sampling but remove no_relation
+    sampled_relation = choice(a=[*all_data], size=N, replace=False, p=uniform_dist_drop_no_relation).tolist()
     meta_train = [random.sample(all_data[i], K) for i in sampled_relation]
 
     meta_test_list = []
     target_list = []
     list_relations = []
-    if args.set_a_positive_instance_per_episode:
-        targets_relations = ["no_relation"] * (number_of_queries - 1)
-        positive_example = [random.choice(sampled_relation)]
-        targets_relations = targets_relations + positive_example
-    else:
-        targets_relations = choice(a=[*all_data], size=number_of_queries, replace=True, p=weights_all_relation).tolist()
+    targets_relations = choice(a=[*all_data], size=number_of_queries, replace=True, p=weights_all_relation).tolist()
     for t in targets_relations:
         if t in sampled_relation:
             correct_target = sampled_relation.index(t)
@@ -80,28 +72,24 @@ def main():
     np.random.seed(args.seed)
 
     whole_division = json.load(open(args.file_name))
-    sample_uniform = args.sample_uniform
     assert "no_relation" in whole_division
-
-    if args.set_a_positive_instance_per_episode:
-        print("WARNING!!, CHANGING POSITIVE LABEL DISTRIBUTION")
 
     whole_division = remove_relations_with_too_few_instances(whole_division,args.K)
 
     weights_all_relation = get_weights(whole_division)
     query_weights = get_query_weights(whole_division,weights_all_relation)
     uniform_dist_drop_no_relation = [1 / (len(query_weights) - 1) if i > 0.0 else 0.0 for i in query_weights ]
-    create_episodes(whole_division, weights_all_relation, query_weights, uniform_dist_drop_no_relation, sample_uniform)
+    create_episodes(whole_division, weights_all_relation, query_weights, uniform_dist_drop_no_relation)
 
 
-def create_episodes(whole_division, weights_all_relation, query_weights, uniform_dist_drop_no_relation, do_sample_uniform):
+def create_episodes(whole_division, weights_all_relation, query_weights, uniform_dist_drop_no_relation):
     episodes = []
     targets_lists = []
     aux_data = []
     for i in range(args.episodes_size):
         episode, targets, [targets_relation_names, N_relations] = TACRED_create_episode(whole_division, weights_all_relation, query_weights,
                                                     uniform_dist_drop_no_relation, args.N, args.K,
-                                                    args.number_of_queries, do_sample_uniform)
+                                                    args.number_of_queries)
         targets_lists.append(targets)
         episodes.append(episode)
         aux_data.append((N_relations,targets_relation_names))
@@ -122,10 +110,6 @@ if __name__ == "__main__":
                         help="seed number")
     parser.add_argument("--output_file_name", type=str, required=True,
                         help="The file name to be generated")
-
-    parser.add_argument("--set_a_positive_instance_per_episode", action="store_true")
-
-    parser.add_argument("--sample_uniform", action="store_false")
 
     global args
     args = parser.parse_args()
