@@ -9,9 +9,14 @@ https://nlp.stanford.edu/projects/tacred/#access
 ##### Convert TACRED to a list of instances per relation, you can use this script, on each of these train dev test dataset.
 These three commands convert each of TACRED train/dev/test into a list of instances per relation type.  
 
-1. python convert_dataset_to_list_by_relation.py --dataset raw/train.json --output_file raw/instances_per_relation/TACRED_train.json
-2. python convert_dataset_to_list_by_relation.py --dataset raw/dev.json --output_file raw/instances_per_relation/TACRED_dev.json
-3. python convert_dataset_to_list_by_relation.py --dataset raw/test.json --output_file raw/instances_per_relation/TACRED_test.json
+ ``` bash 
+ python convert_dataset_to_list_by_relation.py --dataset raw/train.json --output_file raw/instances_per_relation/TACRED_train.json
+ python convert_dataset_to_list_by_relation.py --dataset raw/dev.json --output_file raw/instances_per_relation/TACRED_dev.json
+ python convert_dataset_to_list_by_relation.py --dataset raw/test.json --output_file raw/instances_per_relation/TACRED_test.json
+ ```
+
+
+
 
 ##### Convert these datasets into Few-Shot, i.e. the classes are disjoint across the three data sections.
 
