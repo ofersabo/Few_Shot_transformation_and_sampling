@@ -1,6 +1,6 @@
 # Few-Shot Transformation and Sampling 
 #### In this repository we share the script to transform any supervised dataset into a Few-Shot dataset. 
-#### Further, this repository contains a script to generate episodes as described in link to paper.
+#### Further, this repository contains a script to generate episodes as described in the paper.
 
 ### To transform TACRED into our suggested Few-Shot TACRED please use this commad
 ##### Getting access to TACRED dataset
