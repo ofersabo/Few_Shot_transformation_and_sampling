@@ -20,7 +20,7 @@ These three commands convert each of TACRED train/dev/test into a list of instan
 
 ##### Convert these datasets into Few-Shot, i.e. the classes are disjoint across the three data sections.
 
-This commands utilizes our method of transforming supervised dataset into Few-Shot Learning dataset on TACRED. 
+This command utilizes our method of transforming supervised dataset into Few-Shot Learning dataset on TACRED. 
 ``` bash 
 python data_transformation.py --train_data raw/instances_per_relation/TACRED_train.json --dev_data raw/instances_per_relation/TACRED_dev.json --test_data raw/instances_per_relation/TACRED_test.json --fixed_categories_split categories_split.json --test_size 10 --output_dir ./data_few_shot
 ```
@@ -35,7 +35,8 @@ python episodes_sampling_for_fs_TACRED.py --file_name [train/dev/test] --episode
 
 ##### Generating Few-Shot TACRED test episodes 
 
-To create the test episodes benchmark use these shell script to create five files of episodes with seed ranging from 160290 to 160294
+To create the test episodes benchmark, use this shell script:
+Creating five files of episodes with seed ranging from 160290 to 160294
 
 Here is the shell command: 
 
@@ -45,9 +46,10 @@ Here is the shell command:
 
 
 ### Downsampling the NOTA category in the training set, as we found it to be advantageous. 
-Here is the command that generates the same dataset as we used. If you choose to downsample the training data, then apply
+Here is the command that generates the same downsampled training dataset as we used. If you choose to downsample the training data, apply
 this downsampling before generating episodes.
 
+```bash 
 python downsample_train_data.py --dataset data_few_shot/_train_data.json --output_file data_few_shot/new_downsampled_train_data.json   
-
+```
  
