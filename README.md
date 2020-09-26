@@ -20,22 +20,29 @@ These three commands convert each of TACRED train/dev/test into a list of instan
 
 ##### Convert these datasets into Few-Shot, i.e. the classes are disjoint across the three data sections.
 
-1. transform TACRED into Few-Shot TACRED 
+This commands utilizes our method of transforming supervised dataset into Few-Shot Learning dataset on TACRED. 
+``` bash 
 python data_transformation.py --train_data raw/instances_per_relation/TACRED_train.json --dev_data raw/instances_per_relation/TACRED_dev.json --test_data raw/instances_per_relation/TACRED_test.json --fixed_categories_split categories_split.json --test_size 10 --output_dir ./data_few_shot
+```
 
 voila, the new Few-Shot TACRED dataset, divided into train dev and test datasets.
 
 ### To generate episodes for Few-Shot TACRED with respect to data distribution
 
-##### To generate the test episodes for Few-Shot TACRED 
-python episodes_sampling_for_fs_TACRED.py --file_name [test_data] --episodes_size 10000 --N 5 --K 1 --number_of_queries 3 --seed 16029[0-4] --output_file_name [output_file_name] 
-Remember to create four files of episodes with seed ranging from 160290 to 160294
-Use the same script to generate train and dev episodes. 
+``` bash 
+python episodes_sampling_for_fs_TACRED.py --file_name [train/dev/test] --episodes_size [episodes_size] --N [N_way] --K [K_shot] --number_of_queries [number_of_test_instances] --seed [123] --output_file_name [output_file_name]
+``` 
 
-### Generating the test episodes for Few-Shot TACRED
-use our shell script to generate the same five files of test episodes for each setting (1-shot and 5-shot). 
+##### Generating Few-Shot TACRED test episodes 
 
+To create the test episodes benchmark use these shell script to create five files of episodes with seed ranging from 160290 to 160294
+
+Here is the shell command: 
+
+``` bash
 ./create_test_episodes.sh
+```
+
 
 ### Downsampling the NOTA category in the training set, as we found it to be advantageous. 
 Here is the command that generates the same dataset as we used. If you choose to downsample the training data, then apply
