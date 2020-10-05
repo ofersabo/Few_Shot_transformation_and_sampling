@@ -1,5 +1,6 @@
 .git/*
 .idea/*
+data/*
 skim_json.py
 verify_episodes.py
 get_the_same_downsampling.py
