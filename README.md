@@ -44,6 +44,8 @@ Here is the shell command:
 ./create_test_episodes.sh
 ```
 
+For each test episode file we generated an id file which composed of the episodes ids, you can use these files to verify that your generated test episodes are identical to our test episodes benchmark.
+These files are stored under the ids_of_episodes directory
 
 ### Downsampling the NOTA category in the training set, as we found it to be advantageous. 
 Here is the command that generates the same downsampled training dataset as we used. If you choose to downsample the training data, apply
