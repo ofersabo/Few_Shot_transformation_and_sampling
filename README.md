@@ -10,9 +10,9 @@ https://nlp.stanford.edu/projects/tacred/#access
 These three commands convert each of TACRED train/dev/test into a list of instances per relation type.  
 
  ``` bash 
- python convert_dataset_to_list_by_relation.py --dataset raw/train.json --output_file raw/instances_per_relation/TACRED_train.json
- python convert_dataset_to_list_by_relation.py --dataset raw/dev.json --output_file raw/instances_per_relation/TACRED_dev.json
- python convert_dataset_to_list_by_relation.py --dataset raw/test.json --output_file raw/instances_per_relation/TACRED_test.json
+ python convert_dataset_to_list_by_relation.py --dataset TACRED_raw_data/train.json --output_file TACRED_raw_data/instances_per_relation/TACRED_train.json
+ python convert_dataset_to_list_by_relation.py --dataset TACRED_raw_data/dev.json --output_file TACRED_raw_data/instances_per_relation/TACRED_dev.json
+ python convert_dataset_to_list_by_relation.py --dataset TACRED_raw_data/test.json --output_file TACRED_raw_data/instances_per_relation/TACRED_test.json
  ```
 
 
@@ -22,7 +22,7 @@ These three commands convert each of TACRED train/dev/test into a list of instan
 
 This command utilizes our method of transforming supervised dataset into Few-Shot Learning dataset on TACRED. 
 ``` bash 
-python data_transformation.py --train_data raw/instances_per_relation/TACRED_train.json --dev_data raw/instances_per_relation/TACRED_dev.json --test_data raw/instances_per_relation/TACRED_test.json --fixed_categories_split categories_split.json --test_size 10 --output_dir ./data_few_shot
+python data_transformation.py --train_data TACRED_raw_data/instances_per_relation/TACRED_train.json --dev_data TACRED_raw_data/instances_per_relation/TACRED_dev.json --test_data TACRED_raw_data/instances_per_relation/TACRED_test.json --fixed_categories_split categories_split.json --test_size 10 --output_dir ./data_few_shot
 ```
 
 voila, the new Few-Shot TACRED dataset, divided into train dev and test datasets.

@@ -1,6 +1,6 @@
 .git/*
 .idea/*
-data/*
+TACRED_raw_data/*
 copy_ids.py
 skim_json.py
 verify_episodes.py
