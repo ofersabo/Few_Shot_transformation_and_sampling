@@ -18,7 +18,7 @@ These three commands convert each of TACRED train/dev/test into a list of instan
 
 
 
-##### Convert these datasets into Few-Shot, i.e. the classes are disjoint across the three data sections.
+##### Convert these data partitions into Few-Shot dataset, in which the classes across partitions are disjoint.
 
 This command utilizes our method of transforming supervised dataset into Few-Shot Learning dataset on TACRED. 
 ``` bash 
